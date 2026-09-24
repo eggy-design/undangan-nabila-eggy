@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Undangan Pernikahan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     DAFTAR ISI FILE INI (biar gampang loncat pakai Ctrl+F):
+     1.  RESET & VARIABEL WARNA/FONT
+     2.  COVER (dasar + FITUR: MODE COVER + FITUR: MONOGRAM)
+     3.  GAYA UMUM SECTION
+     4.  PEMBUKA (wajib)
+     5.  MEMPELAI (wajib) + FITUR: TURUT MENGUNDANG
+     6.  FITUR: COUNTDOWN
+     7.  ACARA (wajib) + FITUR: CATATAN KHUSUS
+     8.  FITUR: RUNDOWN ACARA
+     9.  FITUR: LOVE STORY
+     10. FITUR: VIDEO PRE-WEDDING
+     11. FITUR: GALERI
+     12. FITUR: WALL OF LOVE (BUKU TAMU PUBLIK)
+     13. FITUR: RSVP
+     14. FITUR: UCAPAN & DOA
+     15. FITUR: ANGPAO DIGITAL
+     16. FITUR: KONTAK & MEDIA SOSIAL
+     17. FITUR: QR CODE UNDANGAN
+     18. FITUR: LIVE STREAMING
+     19. PENUTUP (wajib)
+     20. FITUR: MUSIK LATAR
+     Semua yang ditandai "FITUR: ..." aman dihapus kalau tidak
+     dipakai. Bagian tanpa tanda FITUR adalah kerangka inti
+     undangan (sebaiknya jangan dihapus). Panduan hapus per fitur
+     ada di file panduan.md.
+     ============================================================ */
+
+  /* ============================================================
+     1. RESET & VARIABEL WARNA/FONT
+     Ganti nilai di :root ini untuk custom warna & font tanpa
+     menyentuh bagian lain di file.
+     ============================================================ */
+  :root{
+    --clr-bg: #FAF6EF;
+    --clr-ink: #2B2118;
+    --clr-ink-soft: #6B5D4F;
+    --clr-forest: #33402F;
+    --clr-gold: #A9824C;
+    --clr-line: #D8CBB4;
+    --clr-card: #FFFFFF;
+    --font-display: 'Cormorant Garamond', serif;
+    --font-body: 'Jost', sans-serif;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  html, body{ height:100%; }
+  body{
+    font-family: var(--font-body);
+    background: var(--clr-bg);
+    color: var(--clr-ink);
+    overflow-x:hidden;
+  }
+  img{ max-width:100%; display:block; }
+
+  /* Kunci scroll selama cover masih ditampilkan (dilepas via JS
+     begitu tombol "Buka Undangan" diklik) */
+  body.cover-active{
+    overflow:hidden;
+    height:100%;
+    position:fixed;
+    inset:0;
+    width:100%;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+
+  /* ============================================================
+     2. COVER / SAMPUL
+     ============================================================ */
+  #cover{
+    position:fixed;
+    inset:0;
+    z-index:50;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:32px;
+    color:#fff;
+    overflow:hidden;
+    transition: transform .9s cubic-bezier(.65,0,.35,1), opacity .9s ease;
+  }
+  #cover.hide{
+    transform: translateY(-100%);
+    pointer-events:none;
+  }
+  /* lapisan gelap supaya teks tetap terbaca di atas foto/video/slide */
+  .cover-overlay{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(180deg, rgba(43,33,24,.35), rgba(43,33,24,.55));
+    z-index:-1;
+  }
+  .cover-content{ position:relative; z-index:1; }
+
+  /* --- FITUR: MODE COVER (mulai) ---------------------------------
+     3 pilihan tampilan background cover: foto diam / video / slide
+     3 foto bergantian. Yang tidak dipakai otomatis disembunyikan
+     oleh JS lewat variabel COVER_MODE. Kalau mau HAPUS fitur ini
+     sepenuhnya dan cukup pakai 1 foto statis, ganti seluruh blok
+     .cover-bg-* ini dengan satu background-image biasa di #cover. */
+  .cover-bg{ position:absolute; inset:0; z-index:-2; display:none; }
+  .cover-bg img, .cover-bg video{ width:100%; height:100%; object-fit:cover; }
+  .cover-bg-slide{ }
+  .cover-bg-slide img{
+    position:absolute; inset:0; opacity:0;
+    transition:opacity 1.2s ease;
+  }
+  .cover-bg-slide img.active{ opacity:1; }
+  /* --- FITUR: MODE COVER (selesai) --- */
+
+  /* --- FITUR: MONOGRAM (mulai) --- */
+  .monogram{
+    width:64px; height:64px;
+    border:1px solid rgba(255,255,255,.75);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family: var(--font-display);
+    font-size:20px;
+    letter-spacing:.05em;
+    margin:0 auto 22px;
+  }
+  /* --- FITUR: MONOGRAM (selesai) --- */
+
+  .cover-eyebrow{
+    font-family: var(--font-body);
+    font-weight:300;
+    letter-spacing:.15em;
+    font-size:13px;
+    opacity:.9;
+    margin-bottom:18px;
+  }
+  .cover-names{
+    font-family: var(--font-display);
+    font-size:clamp(40px, 9vw, 72px);
+    line-height:1.1;
+    font-weight:500;
+  }
+  .cover-date{
+    margin-top:18px;
+    font-size:15px;
+    letter-spacing:.08em;
+    opacity:.9;
+  }
+  .cover-guest{
+    margin-top:36px;
+    font-size:13px;
+    opacity:.8;
+  }
+  .cover-guest span{
+    display:block;
+    font-family: var(--font-display);
+    font-size:20px;
+    margin-top:6px;
+    opacity:1;
+  }
+  #btn-buka{
+    margin-top:40px;
+    border:1px solid rgba(255,255,255,.7);
+    background:transparent;
+    color:#fff;
+    font-family: var(--font-body);
+    letter-spacing:.08em;
+    font-size:13px;
+    padding:14px 34px;
+    border-radius:999px;
+    cursor:pointer;
+    transition: background .3s ease, color .3s ease;
+  }
+  #btn-buka:hover, #btn-buka:focus-visible{
+    background:#fff;
+    color: var(--clr-ink);
+  }
+
+  /* ============================================================
+     3. GAYA UMUM SECTION (dipakai hampir semua bagian isi)
+     ============================================================ */
+  #isi{ position:relative; z-index:1; }
+  section{
+    padding:96px 24px;
+    max-width:640px;
+    margin:0 auto;
+    text-align:center;
+  }
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:.14em;
+    color: var(--clr-ink-soft);
+    margin-bottom:14px;
+  }
+  h1, h2{
+    font-family: var(--font-display);
+    font-weight:500;
+    color: var(--clr-forest);
+  }
+  .divider{
+    width:48px; height:1px;
+    background: var(--clr-line);
+    margin:28px auto;
+  }
+  .detail-card{
+    background: var(--clr-card);
+    border:1px solid var(--clr-line);
+    border-radius:18px;
+    padding:32px 28px;
+    margin-top:28px;
+    text-align:left;
+  }
+  .detail-card h3{
+    font-family: var(--font-display);
+    font-size:22px;
+    color: var(--clr-forest);
+    margin-bottom:6px;
+  }
+  .detail-card p{
+    font-size:14px;
+    color: var(--clr-ink-soft);
+    line-height:1.7;
+  }
+  .detail-card + .detail-card{ margin-top:18px; }
+  .btn-maps{
+    display:inline-block;
+    margin-top:16px;
+    font-size:13px;
+    letter-spacing:.05em;
+    color:#fff;
+    background: var(--clr-forest);
+    padding:10px 22px;
+    border-radius:999px;
+    text-decoration:none;
+    border:none;
+    cursor:pointer;
+  }
+  .frame-wrap{
+    margin-top:28px;
+    border-radius:18px;
+    overflow:hidden;
+    border:1px solid var(--clr-line);
+  }
+  .frame-wrap iframe{ width:100%; min-height:600px; border:none; display:block; }
+  .note-kecil{ font-size:12px; color: var(--clr-ink-soft); margin-top:14px; }
+
+  /* ============================================================
+     4. PEMBUKA
+     ============================================================ */
+  #pembuka h2{
+    font-size:clamp(28px, 5vw, 36px);
+    line-height:1.5;
+    font-weight:400;
+    font-style:italic;
+  }
+  #pembuka p.ayat-src{ margin-top:14px; font-size:13px; color: var(--clr-ink-soft); }
+
+  /* ============================================================
+     5. MEMPELAI
+     ============================================================ */
+  .mempelai-grid{
+    display:flex; justify-content:center; align-items:flex-start;
+    gap:32px; margin-top:32px; flex-wrap:wrap;
+  }
+  .mempelai{ flex:1 1 200px; max-width:240px; }
+  .mempelai img{
+    width:140px; height:140px; border-radius:50%; object-fit:cover;
+    margin:0 auto 18px; border:3px solid var(--clr-card);
+    box-shadow:0 8px 24px rgba(43,33,24,.12);
+  }
+  .mempelai h3{ font-family: var(--font-display); font-size:26px; font-weight:500; color: var(--clr-forest); }
+  .mempelai p{ font-size:13px; color: var(--clr-ink-soft); margin-top:6px; line-height:1.5; }
+  .amp{ font-family: var(--font-display); font-style:italic; font-size:32px; color: var(--clr-gold); align-self:center; padding-top:40px; }
+
+  /* --- FITUR: TURUT MENGUNDANG (mulai) --- */
+  .turut-list{
+    margin-top:24px; font-size:14px; color: var(--clr-ink-soft); line-height:1.9;
+  }
+  /* --- FITUR: TURUT MENGUNDANG (selesai) --- */
+
+  /* --- FITUR: COUNTDOWN (mulai) --- */
+  #countdown-row{ display:flex; justify-content:center; gap:14px; margin-top:32px; flex-wrap:wrap; }
+  .cd-box{ background: var(--clr-card); border:1px solid var(--clr-line); border-radius:14px; padding:16px 18px; min-width:70px; }
+  .cd-box .num{ font-family: var(--font-display); font-size:28px; color: var(--clr-forest); font-weight:600; }
+  .cd-box .lbl{ font-size:10px; letter-spacing:.1em; color: var(--clr-ink-soft); margin-top:4px; }
+  /* --- FITUR: COUNTDOWN (selesai) --- */
+
+  /* --- FITUR: RUNDOWN ACARA (mulai) --- */
+  .rundown-list{ margin-top:28px; text-align:left; }
+  .rundown-item{
+    display:flex; gap:16px; padding:14px 0; border-bottom:1px solid var(--clr-line);
+  }
+  .rundown-item:last-child{ border-bottom:none; }
+  .rundown-item .jam{
+    font-family: var(--font-display); font-weight:600; color: var(--clr-gold);
+    min-width:76px; font-size:16px;
+  }
+  .rundown-item .aktivitas{ font-size:14px; color: var(--clr-ink-soft); }
+  /* --- FITUR: RUNDOWN ACARA (selesai) --- */
+
+  /* --- FITUR: LOVE STORY (mulai) --- */
+  .story-timeline{ margin-top:32px; text-align:left; position:relative; padding-left:24px; }
+  .story-timeline::before{
+    content:''; position:absolute; left:5px; top:6px; bottom:6px; width:1px; background: var(--clr-line);
+  }
+  .story-item{ position:relative; padding-bottom:32px; }
+  .story-item:last-child{ padding-bottom:0; }
+  .story-item::before{
+    content:''; position:absolute; left:-24px; top:4px; width:11px; height:11px;
+    border-radius:50%; background: var(--clr-gold);
+  }
+  .story-item .tahun{ font-family: var(--font-display); font-size:18px; color: var(--clr-forest); font-weight:600; }
+  .story-item p{ font-size:14px; color: var(--clr-ink-soft); margin-top:4px; line-height:1.7; }
+  /* --- FITUR: LOVE STORY (selesai) --- */
+
+  /* --- FITUR: VIDEO PRE-WEDDING (mulai) --- */
+  .video-wrap{ position:relative; width:100%; padding-bottom:56.25%; margin-top:28px; border-radius:18px; overflow:hidden; }
+  .video-wrap iframe{ position:absolute; inset:0; width:100%; height:100%; border:none; }
+  /* --- FITUR: VIDEO PRE-WEDDING (selesai) --- */
+
+  /* --- FITUR: GALERI (mulai) --- */
+  .galeri-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:28px; }
+  .galeri-grid img{ width:100%; height:130px; object-fit:cover; border-radius:8px; }
+  /* --- FITUR: GALERI (selesai) --- */
+
+  /* --- FITUR: WALL OF LOVE (mulai) --- */
+  #wall-list{ margin-top:28px; text-align:left; display:flex; flex-direction:column; gap:14px; }
+  .wall-item{ background: var(--clr-card); border:1px solid var(--clr-line); border-radius:14px; padding:16px 18px; }
+  .wall-item .nama{ font-family: var(--font-display); font-size:17px; color: var(--clr-forest); font-weight:600; }
+  .wall-item .pesan{ font-size:13px; color: var(--clr-ink-soft); margin-top:4px; line-height:1.6; }
+  /* --- FITUR: WALL OF LOVE (selesai) --- */
+
+  /* --- FITUR: ANGPAO DIGITAL (mulai) --- */
+  .angpao-list{ margin-top:28px; display:flex; flex-direction:column; gap:14px; text-align:left; }
+  .angpao-card{
+    background: var(--clr-card); border:1px solid var(--clr-line); border-radius:14px;
+    padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+  }
+  .angpao-card .info .bank{ font-size:12px; letter-spacing:.08em; color: var(--clr-ink-soft); }
+  .angpao-card .info .nomor{ font-family: var(--font-display); font-size:20px; color: var(--clr-forest); margin-top:2px; }
+  .angpao-card .info .anama{ font-size:12px; color: var(--clr-ink-soft); margin-top:2px; }
+  .btn-salin{
+    border:1px solid var(--clr-forest); background:transparent; color: var(--clr-forest);
+    font-family: var(--font-body); font-size:12px; letter-spacing:.05em;
+    padding:9px 16px; border-radius:999px; cursor:pointer; white-space:nowrap;
+  }
+  .btn-salin:hover{ background: var(--clr-forest); color:#fff; }
+  /* --- FITUR: ANGPAO DIGITAL (selesai) --- */
+
+  /* --- FITUR: KONTAK & MEDIA SOSIAL (mulai) --- */
+  .kontak-list{ display:flex; justify-content:center; gap:16px; margin-top:28px; flex-wrap:wrap; }
+  .kontak-item{
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    text-decoration:none; color: var(--clr-ink);
+  }
+  .kontak-item .ikon{
+    width:52px; height:52px; border-radius:50%; background: var(--clr-forest); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:18px;
+  }
+  .kontak-item span{ font-size:11px; color: var(--clr-ink-soft); }
+  /* --- FITUR: KONTAK & MEDIA SOSIAL (selesai) --- */
+
+  /* --- FITUR: QR CODE UNDANGAN (mulai) --- */
+  #qr-img{ margin:28px auto 0; border:8px solid #fff; box-shadow:0 8px 24px rgba(43,33,24,.12); border-radius:8px; }
+  /* --- FITUR: QR CODE UNDANGAN (selesai) --- */
+
+  /* --- FITUR: LIVE STREAMING (mulai) --- */
+  /* pakai class .video-wrap yang sama dengan FITUR: VIDEO PRE-WEDDING */
+  /* --- FITUR: LIVE STREAMING (selesai) --- */
+
+  /* ============================================================
+     19. PENUTUP
+     ============================================================ */
+  #penutup{ padding-bottom:64px; }
+  #penutup p{ font-size:14px; color: var(--clr-ink-soft); line-height:1.8; margin-top:8px; }
+  #penutup .signature{ font-family: var(--font-display); font-size:24px; color: var(--clr-forest); margin-top:22px; }
+
+  /* --- FITUR: MUSIK LATAR (mulai) --- */
+  #music-toggle{
+    position:fixed; bottom:20px; right:20px; z-index:40;
+    width:44px; height:44px; border-radius:50%;
+    background: var(--clr-forest); color:#fff; border:none; font-size:16px; cursor:pointer;
+    box-shadow:0 6px 18px rgba(43,33,24,.25);
+    opacity:0; transform:scale(.8);
+    transition: opacity .4s ease, transform .4s ease;
+  }
+  #music-toggle.show{ opacity:1; transform:scale(1); }
+  /* --- FITUR: MUSIK LATAR (selesai) --- */
+
+  @media (max-width:480px){
+    section{ padding:72px 20px; }
+    .mempelai-grid{ gap:8px; }
+    .amp{ display:none; }
+  }
+</style>
+</head>
+<body class="cover-active">
+
+  <!-- ============================================================
+       2. COVER
+       ============================================================ -->
+  <div id="cover">
+
+    <!-- FITUR: MODE COVER (mulai) -->
+    <div class="cover-overlay"></div>
+    <div class="cover-bg" id="cover-bg-photo">
+      <img src="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop" alt="Foto cover">
+    </div>
+    <div class="cover-bg" id="cover-bg-video">
+      <video autoplay muted loop playsinline>
+        <source src="video-cover.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="cover-bg cover-bg-slide" id="cover-bg-slide">
+      <img class="active" src="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop" alt="Slide 1">
+      <img src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?q=80&w=1200&auto=format&fit=crop" alt="Slide 2">
+      <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1200&auto=format&fit=crop" alt="Slide 3">
+    </div>
+    <!-- FITUR: MODE COVER (selesai) -->
+
+    <div class="cover-content">
+      <!-- FITUR: MONOGRAM (mulai) -->
+      <div class="monogram">E&amp;N</div>
+      <!-- FITUR: MONOGRAM (selesai) -->
+
+      <div class="cover-eyebrow">SYUKURAN PERNIKAHAN</div>
+      <div class="cover-names">Eggy &amp; Nabila</div>
+      <div class="cover-date">Sabtu, 10 Oktober 2026</div>
+      <div class="cover-guest">Kepada Yth. Bapak/Ibu/Saudara/i
+        <span id="nama-tamu">Tamu Undangan</span>
+      </div>
+      <button id="btn-buka">Buka Undangan</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       ISI UNDANGAN
+       ============================================================ -->
+  <div id="isi">
+
+    <!-- 4. PEMBUKA -->
+    <section id="pembuka">
+      <div class="eyebrow">BISMILLAHIRRAHMANIRRAHIM</div>
+      <h2>"Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan dari jenismu sendiri, supaya kamu merasa tenteram kepadanya."</h2>
+      <p class="ayat-src">QS. Ar-Rum: 21</p>
+    </section>
+
+    <!-- 5. MEMPELAI -->
+    <section id="mempelai">
+      <div class="eyebrow">MEMPELAI</div>
+      <h1 style="font-size:32px;">Kami Yang Berbahagia</h1>
+      <div class="mempelai-grid">
+        <div class="mempelai">
+          <img src="eggy.jpeg" alt="Foto mempelai pria">
+          <h3>Eggy Firmansyah Sundava</h3>
+          <p>Putra dari<br>Bapak Suyono &amp; Ibu Ai</p>
+        </div>
+        <div class="amp">&amp;</div>
+        <div class="mempelai">
+          <img src="nabila.jpeg" alt="Foto mempelai wanita">
+          <h3>Nabila Nurlisnawati Kurnia Putri</h3>
+          <p>Putri dari<br>Bapak Deden &amp; Ibu Siti</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FITUR: COUNTDOWN (mulai) -->
+    <section id="countdown">
+      <div class="eyebrow">MENUJU HARI BAHAGIA</div>
+      <h1 style="font-size:28px;">Hitung Mundur</h1>
+      <div id="countdown-row">
+        <div class="cd-box"><div class="num" id="cd-hari">00</div><div class="lbl">HARI</div></div>
+        <div class="cd-box"><div class="num" id="cd-jam">00</div><div class="lbl">JAM</div></div>
+        <div class="cd-box"><div class="num" id="cd-menit">00</div><div class="lbl">MENIT</div></div>
+        <div class="cd-box"><div class="num" id="cd-detik">00</div><div class="lbl">DETIK</div></div>
+      </div>
+    </section>
+    <!-- FITUR: COUNTDOWN (selesai) -->
+
+    <!-- 7. ACARA -->
+    <section id="acara">
+      <div class="eyebrow">RANGKAIAN ACARA</div>
+      <h1 style="font-size:28px;">Waktu &amp; Tempat</h1>
+      <div class="divider"></div>
+
+      <div class="detail-card">
+        <h3>Syukuran Pernikahan</h3>
+        <p>Sabtu, 10 Oktober 2026<br>08.00 – Selesai<br>Kediaman Mempelai Wanita, Blok Sakola 1 No.36a, RT.04/RW.07, Melong, Kec. Cimahi Sel., Kota Cimahi, Jawa Barat 40534</p>
+      </div>
+
+      <!-- Kalau resepsi dibagi beberapa sesi: copy blok .detail-card
+           Resepsi di atas, ubah jadi "Sesi 2", dst. Lihat panduan.md
+           bagian "Sesi Acara / Duplikat Undangan". -->
+
+      <!-- FITUR: CATATAN KHUSUS (mulai) -->
+      <div class="detail-card">
+        <h3>Catatan</h3>
+        <p>Dress code: Rapih dan Sopan.</p>
+      </div>
+      <!-- FITUR: CATATAN KHUSUS (selesai) -->
+
+      <a class="btn-maps" id="btn-kalender" href="#" style="background:var(--clr-gold); margin-top:18px;">+ Simpan ke Kalender</a>
+    </section>
+  
+    <!-- FITUR: WALL OF LOVE (mulai) -->
+    <section id="wall-of-love">
+      <div class="eyebrow">BUKU TAMU</div>
+      <h1 style="font-size:28px;">Ucapan dari Tamu</h1>
+      <p style="font-size:13px; color:var(--clr-ink-soft); margin-top:10px;"></p>
+      <div id="wall-list">
+        <p class="note-kecil">Ucapan dari tamu akan tampil di sini setelah UCAPAN_SHEET_CSV_URL diisi.</p>
+      </div>
+    </section>
+    <!-- FITUR: WALL OF LOVE (selesai) -->
+
+    <!-- FITUR: RSVP (mulai) -->
+    <section id="rsvp">
+      <div class="eyebrow">KONFIRMASI KEHADIRAN</div>
+      <h1 style="font-size:28px;">Konfirmasi Kehadiran dan Ucapan</h1>
+      <p style="font-size:14px; color:var(--clr-ink-soft); margin-top:10px;">
+        Mohon konfirmasi kehadiran Bapak/Ibu/Saudara/i melalui formulir di bawah ini.
+      </p>
+      <div class="frame-wrap">
+        <!-- Ganti "src" di bawah dengan link embed Google Form kamu.
+             Jawaban otomatis masuk ke Google Sheet (menu "Tanggapan"
+             di Google Form) — itu sudah berlaku "Laporan RSVP Google
+             Sheet" tanpa perlu kode tambahan. -->
+        <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScrb_vml47PqjfhrgQt4vAmZSwd4JK6qmE7nXjluChX4RfAEA/viewform?embedded=true">Memuat form…</iframe>
+      </div>
+      <p class="note-kecil">*Ganti bagian src iframe di atas dengan link embed Google Form-mu sendiri (lihat panduan).</p>
+    </section>
+    <!-- FITUR: RSVP (selesai) -->
+
+    <!-- FITUR: QR CODE UNDANGAN (mulai) -->
+    <section id="qr-section">
+      <div class="eyebrow">BAGIKAN UNDANGAN</div>
+      <h1 style="font-size:28px;">Kode QR</h1>
+      <p style="font-size:13px; color:var(--clr-ink-soft); margin-top:10px;">Scan atau bagikan kode ini untuk membuka undangan ini kembali.</p>
+      <img id="qr-img" width="180" height="180" alt="QR Code Undangan">
+    </section>
+    <!-- FITUR: QR CODE UNDANGAN (selesai) -->
+
+    <!-- 19. PENUTUP -->
+    <section id="penutup">
+      <div class="eyebrow">TERIMA KASIH</div>
+      <h1 style="font-size:28px;">Kami Menantikan Kehadiran Anda</h1>
+      <p>Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu kepada kedua mempelai.</p>
+      <div class="signature">Eggy &amp; Nabila</div>
+    </section>
+
+  </div>
+
+  <!-- FITUR: MUSIK LATAR (mulai) -->
+  <button id="music-toggle" aria-label="Putar/Jeda musik">♪</button>
+  <audio id="bg-music" loop>
+    <source src="Berpayung Tuhan - Orchestra Version.mp3" type="audio/mpeg">
+  </audio>
+  <!-- FITUR: MUSIK LATAR (selesai) -->
+
+  <script>
+    // ============================================================
+    // KONFIGURASI — bagian yang paling sering diubah tiap dipakai
+    // untuk acara baru dikumpulkan di sini.
+    // ============================================================
+    const TANGGAL_ACARA   = "2026-10-10T08:00:00"; // FITUR: COUNTDOWN & Simpan Kalender — format YYYY-MM-DDTHH:MM:SS
+    const TANGGAL_SELESAI = "2026-10-10T18:00:00"; // Simpan Kalender — waktu acara selesai
+    const JUDUL_ACARA     = "Syukuran Pernikahan Eggy & Nabila"; // Simpan Kalender
+    const LOKASI_ACARA    = "Kediaman Mempelai Pria, Blok Baru Kihapit Timur No 22, Cimahi"; // Simpan Kalender
+
+    // FITUR: MODE COVER — pilih salah satu: "photo" | "video" | "slide"
+    const COVER_MODE = "photo";
+
+    // FITUR: WALL OF LOVE — kosongkan ("") kalau tidak dipakai.
+    // Isi dengan link CSV hasil publish Google Sheet (lihat panduan.md).
+    const UCAPAN_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS-v6o7M3GIgaY4a7kn0syKtOczY5OmAcO5VyaHGJVUlLBa6X8F9tgqn3OtO0Qx700NbFddgM8sGp36/pub?output=csv";
+    const KOLOM_NAMA_INDEX = 1;   // urutan kolom di sheet, mulai dari 0 (0=Timestamp, 1=Nama, 2=Ucapan pada form standar)
+    const KOLOM_UCAPAN_INDEX = 2;
+
+    // Ambil nama tamu dari URL, contoh: undangan.html?to=Budi+Santoso
+    const params = new URLSearchParams(window.location.search);
+    const namaTamu = params.get('to');
+    if (namaTamu) {
+      document.getElementById('nama-tamu').textContent = decodeURIComponent(namaTamu.replace(/\+/g, ' '));
+    }
+
+    // ============================================================
+    // FITUR: MODE COVER (mulai)
+    // ============================================================
+    function initCoverMode(){
+      document.querySelectorAll('.cover-bg').forEach(el => el.style.display = 'none');
+      const el = document.getElementById('cover-bg-' + COVER_MODE);
+      if (el) el.style.display = 'block';
+      if (COVER_MODE === 'slide') startSlideshow();
+    }
+    function startSlideshow(){
+      const imgs = document.querySelectorAll('#cover-bg-slide img');
+      if (imgs.length < 2) return;
+      let i = 0;
+      setInterval(() => {
+        imgs[i].classList.remove('active');
+        i = (i + 1) % imgs.length;
+        imgs[i].classList.add('active');
+      }, 4000);
+    }
+    initCoverMode();
+    // FITUR: MODE COVER (selesai)
+
+    // Buka undangan (kerangka inti)
+    const cover = document.getElementById('cover');
+    const btnBuka = document.getElementById('btn-buka');
+    const music = document.getElementById('bg-music');       // FITUR: MUSIK LATAR
+    const musicBtn = document.getElementById('music-toggle'); // FITUR: MUSIK LATAR
+
+    // Lapisan tambahan: cegah swipe/scroll gesture di cover pada HP
+    cover.addEventListener('touchmove', (e) => {
+      if (document.body.classList.contains('cover-active')) e.preventDefault();
+    }, { passive: false });
+
+    btnBuka.addEventListener('click', () => {
+      cover.classList.add('hide');
+      document.body.classList.remove('cover-active');
+      window.scrollTo(0, 0); // pastikan mulai dari bagian Pembuka, bukan posisi scroll yang tersimpan
+      musicBtn.classList.add('show');           // FITUR: MUSIK LATAR
+      music.play().catch(() => { /* autoplay diblokir browser, biarkan tombol musik yang mengontrol */ }); // FITUR: MUSIK LATAR
+      setTimeout(() => { cover.style.display = 'none'; }, 900);
+    });
+
+    // FITUR: MUSIK LATAR (mulai)
+    let isPlaying = false;
+    musicBtn.addEventListener('click', () => {
+      if (isPlaying) { music.pause(); musicBtn.textContent = '♪'; }
+      else { music.play(); musicBtn.textContent = '❚❚'; }
+      isPlaying = !isPlaying;
+    });
+    // FITUR: MUSIK LATAR (selesai)
+
+    // FITUR: COUNTDOWN (mulai)
+    function updateCountdown() {
+      const target = new Date(TANGGAL_ACARA).getTime();
+      const now = new Date().getTime();
+      const diff = target - now;
+      if (diff <= 0) {
+        document.getElementById('countdown-row').innerHTML = '<p style="font-family:var(--font-display); font-size:20px;">Hari bahagia telah tiba 🎉</p>';
+        return;
+      }
+      const hari = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const jam = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const menit = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const detik = Math.floor((diff % (1000 * 60)) / 1000);
+      document.getElementById('cd-hari').textContent = String(hari).padStart(2, '0');
+      document.getElementById('cd-jam').textContent = String(jam).padStart(2, '0');
+      document.getElementById('cd-menit').textContent = String(menit).padStart(2, '0');
+      document.getElementById('cd-detik').textContent = String(detik).padStart(2, '0');
+    }
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+    // FITUR: COUNTDOWN (selesai)
+
+    // Simpan ke Kalender (kerangka inti, dipakai section Acara)
+    function toGCalFormat(iso) {
+      return iso.replace(/[-:]/g, ''); // "2026-12-12T08:00:00" -> "20261212T080000"
+    }
+    const btnKalender = document.getElementById('btn-kalender');
+    if (btnKalender) {
+      const mulai = toGCalFormat(TANGGAL_ACARA);
+      const selesai = toGCalFormat(TANGGAL_SELESAI);
+      const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(JUDUL_ACARA)}&dates=${mulai}/${selesai}&location=${encodeURIComponent(LOKASI_ACARA)}`;
+      btnKalender.href = gcalUrl;
+      btnKalender.target = '_blank';
+      btnKalender.rel = 'noopener';
+    }
+
+    // FITUR: WALL OF LOVE (mulai)
+    // Parser CSV sederhana yang tahan koma di dalam tanda kutip
+    function parseCSV(text){
+      const rows = [];
+      let row = [], field = '', inQuotes = false;
+      for (let i = 0; i < text.length; i++){
+        const c = text[i];
+        if (inQuotes){
+          if (c === '"' && text[i+1] === '"'){ field += '"'; i++; }
+          else if (c === '"'){ inQuotes = false; }
+          else field += c;
+        } else {
+          if (c === '"') inQuotes = true;
+          else if (c === ','){ row.push(field); field = ''; }
+          else if (c === '\n'){ row.push(field); rows.push(row); row = []; field = ''; }
+          else if (c !== '\r') field += c;
+        }
+      }
+      if (field.length || row.length){ row.push(field); rows.push(row); }
+      return rows;
+    }
+    if (UCAPAN_SHEET_CSV_URL) {
+      fetch(UCAPAN_SHEET_CSV_URL)
+        .then(res => res.text())
+        .then(text => {
+          const rows = parseCSV(text).slice(1).reverse(); // baris pertama header, urutan terbaru di atas
+          const wrap = document.getElementById('wall-list');
+          if (!rows.length) { wrap.innerHTML = '<p class="note-kecil">Belum ada ucapan.</p>'; return; }
+          wrap.innerHTML = rows.map(r => `
+            <div class="wall-item">
+              <div class="nama">${(r[KOLOM_NAMA_INDEX] || 'Tamu').trim()}</div>
+              <div class="pesan">${(r[KOLOM_UCAPAN_INDEX] || '').trim()}</div>
+            </div>`).join('');
+        })
+        .catch(() => {
+          document.getElementById('wall-list').innerHTML = '<p class="note-kecil">Gagal memuat ucapan. Cek pengaturan publish Google Sheet.</p>';
+        });
+    }
+    // FITUR: WALL OF LOVE (selesai)
+
+    // FITUR: ANGPAO DIGITAL (mulai)
+    function salinTeks(btn){
+      const teks = btn.dataset.copy;
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(teks).then(() => {
+          const asli = btn.textContent;
+          btn.textContent = 'Tersalin!';
+          setTimeout(() => { btn.textContent = asli; }, 1500);
+        });
+      } else {
+        alert('Salin manual: ' + teks); // fallback untuk file dibuka lokal / http biasa
+      }
+    }
+    // FITUR: ANGPAO DIGITAL (selesai)
+
+    // FITUR: QR CODE UNDANGAN (mulai)
+    const qrImg = document.getElementById('qr-img');
+    if (qrImg) {
+      qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(window.location.href);
+    }
+    // FITUR: QR CODE UNDANGAN (selesai)
+  </script>
+
+</body>
+</html>
